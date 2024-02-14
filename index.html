@@ -14,27 +14,51 @@
             align-items: center;
             margin-top: 50px;
         }
-        #content {
+        #content, #gameContent {
             width: 300px;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 8px;
         }
-        #options {
+        #options, #gameOptions {
             margin-top: 20px;
             display: flex;
             justify-content: space-between;
+        }
+        #centerButton, #clickCounter, #modeTitle {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        #gamePage, #titlePage {
+            display: none;
         }
     </style>
 </head>
 <body>
 
 <div id="container">
-    <div id="content">
-        <h1 id="title">Changeable Text</h1>
-        <div id="options">
-            <button onclick="changeOption(-1)">Previous</button>
-            <button onclick="changeOption(1)">Next</button>
+    <div id="titlePage">
+        <div id="content">
+            <h1 id="title">The Clicker Game</h1>
+            <div id="options">
+                <button onclick="changeOption(-1)">Previous</button>
+                <button id="centerButton" onclick="goToGamePage()">Game</button>
+                <button onclick="changeOption(1)">Next</button>
+            </div>
+            <div id="clickCounter">0/5</div>
+            <div id="modeTitle"></div>
+        </div>
+    </div>
+
+    <div id="gamePage">
+        <div id="gameContent">
+            <h1 id="gameTitle"></h1>
+            <p>Click the button below to meet the required clicks:</p>
+            <button onclick="checkClicks()">Click Me</button>
+            <br>
+            <button onclick="goToTitlePage()">Back</button>
+            <div id="clickCounter">0/5</div>
+            <div id="modeTitle"></div>
         </div>
     </div>
 </div>
@@ -42,20 +66,61 @@
 <script>
     let currentOption = 0;
     const options = [
-        { text: "Option 1", button1: "Action 1", button2: "Action 2" },
-        { text: "Option 2", button1: "Action 1", button2: "Action 2" },
-        { text: "Option 3", button1: "Action 1", button2: "Action 2" }
+        { text: "100 clicks (Weekly)", clicksRequired: 100, resetInterval: "weekly" },
+        { text: "1,000 clicks (Weekly)", clicksRequired: 1000, resetInterval: "weekly" },
+        { text: "10,000 clicks (Monthly)", clicksRequired: 10000, resetInterval: "monthly" },
+        { text: "100,000 clicks (Monthly)", clicksRequired: 100000, resetInterval: "monthly" },
+        { text: "1,000,000 clicks (Monthly)", clicksRequired: 1000000, resetInterval: "monthly" },
+        { text: "10,000,000 clicks (Monthly)", clicksRequired: 10000000, resetInterval: "monthly" },
+        { text: "100,000,000 clicks (Yearly)", clicksRequired: 100000000, resetInterval: "yearly" },
+        { text: "1,000,000,000 clicks (Yearly)", clicksRequired: 1000000000, resetInterval: "yearly" }
         // Add more options as needed
     ];
 
+    let clickCount = 0;
+    let currentMode;
+
     function updateContent() {
-        const { text, button1, button2 } = options[currentOption];
+        const { text, clicksRequired, resetInterval } = options[currentOption];
         document.getElementById('title').innerText = text;
+        document.getElementById('modeTitle').innerText = `Mode: ${clicksRequired} clicks (${resetInterval} reset)`;
     }
 
     function changeOption(direction) {
         currentOption = (currentOption + direction + options.length) % options.length;
         updateContent();
+    }
+
+    function goToGamePage() {
+        currentMode = options[currentOption];
+        document.getElementById('titlePage').style.display = 'none';
+        document.getElementById('gamePage').style.display = 'block';
+        document.getElementById('gameTitle').innerText = currentMode.text;
+        resetClickCounter();
+    }
+
+    function goToTitlePage() {
+        document.getElementById('titlePage').style.display = 'block';
+        document.getElementById('gamePage').style.display = 'none';
+        resetClickCounter();
+    }
+
+    function updateClickCounter() {
+        document.getElementById('clickCounter').innerText = `${clickCount}/${currentMode.clicksRequired}`;
+    }
+
+    function resetClickCounter() {
+        clickCount = 0;
+        updateClickCounter();
+    }
+
+    function checkClicks() {
+        clickCount++;
+        updateClickCounter();
+        if (clickCount >= currentMode.clicksRequired) {
+            alert(`You met the required clicks for ${currentMode.text}!`); // You can customize this logic as needed
+            resetClickCounter();
+        }
     }
 
     document.addEventListener('keydown', (event) => {
